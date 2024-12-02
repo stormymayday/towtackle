@@ -53,8 +53,8 @@ export default function HomePage() {
 
                 <div className="flex justify-center">
                     <Image
-                        src="/hero-image.jpg"
                         alt="TowTackle Hero"
+                        src={process.env.NODE_ENV === 'production' ? '/towtackle/hero-image.jpg' : '/hero-image.jpg'}
                         width={500}
                         height={500}
                         className="rounded-xl shadow-2xl"

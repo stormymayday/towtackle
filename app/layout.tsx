@@ -21,7 +21,9 @@ export const metadata: Metadata = {
     openGraph: {
         title: "TowTackle",
         description: "Streamline Towing and Incident Management",
-        images: [{ url: "/hero-image.jpg" }],
+        images: [{
+            url: process.env.NODE_ENV === 'production' ? '/towtackle/hero-image.jpg' : '/hero-image.jpg'
+        }],
     },
 };
 
