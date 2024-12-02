@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
 
     const navigation = [
         { name: 'Home', href: '/dashboard', icon: FiHome },

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '@/contexts/AuthContext';
+import { FirebaseError } from 'firebase/app';
 
 type UserRole = 'client' | 'driver';
 
@@ -40,15 +41,19 @@ export default function RegisterPage() {
             await register(email, password);
             setRegistrationSuccess(true);
             setError('Registration successful! Please check your email for verification link.');
-        } catch (err: any) {
-            if (err.message?.includes('verification')) {
-                setRegistrationSuccess(true);
-                setError('Registration successful! Please check your email for verification link.');
-            } else if (err.code === 'auth/email-already-in-use') {
-                setError('An account with this email already exists.');
+        } catch (err: unknown) {
+            if (err instanceof FirebaseError) {
+                if (err.message?.includes('verification')) {
+                    setRegistrationSuccess(true);
+                    setError('Registration successful! Please check your email for verification link.');
+                } else if (err.code === 'auth/email-already-in-use') {
+                    setError('An account with this email already exists.');
+                } else {
+                    setError('Failed to register. Please try again.');
+                    console.error('Registration error:', err.message);
+                }
             } else {
                 setError('Failed to register. Please try again.');
-                console.error('Registration error:', err);
             }
         } finally {
             setIsLoading(false);
@@ -59,7 +64,7 @@ export default function RegisterPage() {
         try {
             await loginWithGoogle();
             router.push('/dashboard');
-        } catch (err) {
+        } catch {
             setError('Failed to sign in with Google.');
         }
     };

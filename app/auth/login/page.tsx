@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '@/contexts/AuthContext';
+import { FirebaseError } from 'firebase/app';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -25,14 +26,14 @@ export default function LoginPage() {
         try {
             await login(email, password);
             router.push('/dashboard');
-        } catch (err: any) {
-            if (err.message?.includes('verify your email')) {
+        } catch (err: unknown) {
+            if (err instanceof FirebaseError && err.message?.includes('verify your email')) {
                 setVerificationSent(true);
                 setError('Please verify your email before logging in. Check your inbox for a verification link.');
                 try {
                     await sendVerificationEmail();
                     setError('A new verification email has been sent. Please check your inbox.');
-                } catch (verifyError) {
+                } catch {
                     setError('Failed to send verification email. Please try again later.');
                 }
             } else {
@@ -47,7 +48,7 @@ export default function LoginPage() {
         try {
             await loginWithGoogle();
             router.push('/dashboard');
-        } catch (err) {
+        } catch {
             setError('Failed to sign in with Google.');
         }
     };
