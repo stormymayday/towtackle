@@ -12,13 +12,13 @@ export default function HomePage() {
                 </div>
                 <nav className="flex space-x-4">
                     <Link
-                        href="/login"
+                        href="/auth/login"
                         className="px-4 py-2 text-blue-600 hover:text-blue-800 transition"
                     >
                         Login
                     </Link>
                     <Link
-                        href="/register"
+                        href="/auth/register"
                         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
                     >
                         Get Started

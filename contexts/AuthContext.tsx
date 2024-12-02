@@ -6,6 +6,9 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -16,6 +19,8 @@ type AuthContextType = {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     register: (email: string, password: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
+    sendVerificationEmail: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,9 +48,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 email,
                 password
             );
+            
+            if (!userCredential.user.emailVerified) {
+                throw new Error("Please verify your email before logging in.");
+            }
+            
             setUser(userCredential.user);
         } catch (error) {
             console.error("Login error", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const loginWithGoogle = async () => {
+        setIsLoading(true);
+        try {
+            const provider = new GoogleAuthProvider();
+            const userCredential = await signInWithPopup(auth, provider);
+            setUser(userCredential.user);
+        } catch (error) {
+            console.error("Google login error", error);
             throw error;
         } finally {
             setIsLoading(false);
@@ -65,6 +89,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
+    const sendVerificationEmail = async () => {
+        if (user && !user.emailVerified) {
+            try {
+                await sendEmailVerification(user);
+            } catch (error) {
+                console.error("Error sending verification email:", error);
+                throw error;
+            }
+        }
+    };
+
     const register = async (email: string, password: string) => {
         setIsLoading(true);
         try {
@@ -73,7 +108,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 email,
                 password
             );
+            await sendEmailVerification(userCredential.user);
             setUser(userCredential.user);
+            throw new Error("Please check your email for verification link before logging in.");
         } catch (error) {
             console.error("Registration error", error);
             throw error;
@@ -86,11 +123,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         <AuthContext.Provider
             value={{
                 user,
-                isAuthenticated: !!user,
+                isAuthenticated: !!user && user.emailVerified,
                 isLoading,
                 login,
                 logout,
                 register,
+                loginWithGoogle,
+                sendVerificationEmail,
             }}
         >
             {children}
