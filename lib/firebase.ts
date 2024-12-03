@@ -236,6 +236,68 @@ export const createIncident = async (incidentData: {
     }
 };
 
+export const updateIncident = async (
+    incidentId: string, 
+    updateData: Partial<Omit<Incident, 'id' | 'userId' | 'createdAt'>>
+): Promise<Incident> => {
+    try {
+        const currentUser = getCurrentUser();
+        const incidentRef = doc(db, 'incidents', incidentId);
+
+        // Verify the incident belongs to the current user
+        const incidentDoc = await getDoc(incidentRef);
+        if (!incidentDoc.exists() || incidentDoc.data().userId !== currentUser.uid) {
+            throw new Error('Incident not found or unauthorized');
+        }
+
+        // Prepare update data
+        const updatePayload = {
+            ...updateData,
+            updatedAt: Timestamp.now()
+        };
+
+        // Update the document
+        await updateDoc(incidentRef, updatePayload);
+
+        // Fetch and return the updated incident
+        const updatedDoc = await getDoc(incidentRef);
+        const updatedData = updatedDoc.data() as Incident;
+
+        return {
+            ...updatedData,
+            id: incidentId,
+            createdAt: updatedData.createdAt instanceof Timestamp 
+                ? updatedData.createdAt.toDate() 
+                : updatedData.createdAt,
+            updatedAt: updatedData.updatedAt instanceof Timestamp 
+                ? updatedData.updatedAt.toDate() 
+                : updatedData.updatedAt
+        };
+    } catch (error) {
+        console.error('Error updating incident:', error);
+        throw error;
+    }
+};
+
+export const deleteIncident = async (incidentId: string): Promise<void> => {
+    try {
+        const currentUser = getCurrentUser();
+        const incidentRef = doc(db, 'incidents', incidentId);
+
+        // Verify the incident belongs to the current user
+        const incidentDoc = await getDoc(incidentRef);
+        if (!incidentDoc.exists() || incidentDoc.data().userId !== currentUser.uid) {
+            throw new Error('Incident not found or unauthorized');
+        }
+
+        // Delete the document
+        await deleteDoc(incidentRef);
+    } catch (error) {
+        console.error('Error deleting incident:', error);
+        throw error;
+    }
+};
+
 export const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {

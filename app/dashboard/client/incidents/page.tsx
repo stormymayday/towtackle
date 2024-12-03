@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { findIncidentsByUser } from '@/lib/firebase';
+import { findIncidentsByUser, updateIncident, deleteIncident } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
 type Incident = {
     id: string;
@@ -25,8 +26,9 @@ export default function ClientIncidents() {
     const { user, isLoading, isAuthenticated } = useAuth();
     const router = useRouter();
     const [incidents, setIncidents] = useState<Incident[]>([]);
-    const [isIncidentsLoading, setIsIncidentsLoading] = useState(true);
+    const [isIncidentsLoading, setIsIncidentsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
 
     useEffect(() => {
         // Redirect if not authenticated
@@ -64,6 +66,55 @@ export default function ClientIncidents() {
             fetchIncidents();
         }
     }, [user, isLoading, isAuthenticated, router]);
+
+    const handleEditIncident = async (updatedIncident: Partial<Incident>) => {
+        if (!editingIncident) return;
+
+        try {
+            const updated = await updateIncident(editingIncident.id, {
+                status: updatedIncident.status,
+                location: updatedIncident.location,
+                vehicleType: updatedIncident.vehicleType,
+                issueType: updatedIncident.issueType
+            });
+            
+            // Convert Timestamp to Date if necessary
+            const convertedUpdated = {
+                ...updated,
+                createdAt: updated.createdAt instanceof Timestamp 
+                    ? updated.createdAt.toDate() 
+                    : updated.createdAt,
+                updatedAt: updated.updatedAt instanceof Timestamp
+                    ? updated.updatedAt.toDate()
+                    : updated.updatedAt
+            };
+            
+            // Update the incidents list
+            setIncidents(prev => 
+                prev.map(incident => 
+                    incident.id === updated.id ? convertedUpdated : incident
+                )
+            );
+            
+            // Reset editing state
+            setEditingIncident(null);
+        } catch (err) {
+            console.error('Error updating incident:', err);
+            setError(err instanceof Error ? err.message : 'Failed to update incident');
+        }
+    };
+
+    const handleDeleteIncident = async (incidentId: string) => {
+        try {
+            await deleteIncident(incidentId);
+            
+            // Remove the deleted incident from the list
+            setIncidents(prev => prev.filter(incident => incident.id !== incidentId));
+        } catch (err) {
+            console.error('Error deleting incident:', err);
+            setError(err instanceof Error ? err.message : 'Failed to delete incident');
+        }
+    };
 
     // Loading state
     if (isLoading || isIncidentsLoading) {
@@ -126,8 +177,24 @@ export default function ClientIncidents() {
                             {incidents.map((incident) => (
                                 <div 
                                     key={incident.id} 
-                                    className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow"
+                                    className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow relative"
                                 >
+                                    <div className="absolute top-2 right-2 flex space-x-2">
+                                        <button 
+                                            onClick={() => setEditingIncident(incident)}
+                                            className="text-blue-500 hover:text-blue-700"
+                                            title="Edit Incident"
+                                        >
+                                            <FiEdit />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteIncident(incident.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                            title="Delete Incident"
+                                        >
+                                            <FiTrash2 />
+                                        </button>
+                                    </div>
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h2 className="text-xl font-semibold text-gray-900 mb-2">
