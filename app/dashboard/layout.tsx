@@ -43,12 +43,12 @@ export default function DashboardLayout({
                 sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}>
                 <div className="flex items-center justify-between h-16 px-4 border-b">
-                    <span className="text-xl font-bold">TowTackle</span>
+                    <span className="text-xl font-bold text-gray-900">TowTackle</span>
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="p-2 rounded-md hover:bg-gray-100"
                     >
-                        <FiX className="h-6 w-6" />
+                        <FiX className="h-6 w-6 text-gray-900" />
                     </button>
                 </div>
                 <nav className="flex-1 px-2 py-4 space-y-1">
@@ -85,7 +85,7 @@ export default function DashboardLayout({
             {/* Desktop sidebar */}
             <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:border-gray-200 lg:bg-white lg:pt-5">
                 <div className="flex items-center h-16 px-4 border-b">
-                    <span className="text-xl font-bold">TowTackle</span>
+                    <span className="text-xl font-bold text-gray-900">TowTackle</span>
                 </div>
                 <nav className="flex-1 px-2 py-4 space-y-1">
                     {navigation.map((item) => {
@@ -130,7 +130,7 @@ export default function DashboardLayout({
                         <FiMenu className="h-6 w-6" />
                     </button>
                     <div className="flex items-center px-4">
-                        <span className="text-xl font-bold">TowTackle</span>
+                        <span className="text-xl font-bold text-gray-900">TowTackle</span>
                     </div>
                 </div>
                 {children}

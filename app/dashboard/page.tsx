@@ -96,7 +96,7 @@ export default function Dashboard() {
                                 ) : (
                                     <FaUserCircle className="w-10 h-10 text-gray-500" />
                                 )}
-                            <span className="text-lg font-medium">{userData?.displayName || 'User'}</span>
+                            <span className="text-lg font-medium text-gray-900">{userData?.displayName || 'User'}</span>
                         </div>
                     </div>
 
@@ -106,9 +106,9 @@ export default function Dashboard() {
                         <div className="bg-white shadow-lg rounded-lg p-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile</h2>
                             <div className="space-y-2">
-                                <p><strong>Email:</strong> {userData?.email || 'N/A'}</p>
-                                <p><strong>Role:</strong> {userData?.role || 'N/A'}</p>
-                                <p><strong>Joined:</strong> {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}</p>
+                                <p className="text-gray-700"><strong>Email:</strong> {userData?.email || 'N/A'}</p>
+                                <p className="text-gray-700"><strong>Role:</strong> {userData?.role || 'N/A'}</p>
+                                <p className="text-gray-700"><strong>Joined:</strong> {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}</p>
                             </div>
                         </div>
 
