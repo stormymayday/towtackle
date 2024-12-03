@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { createUserDocument } from '@/lib/firebase';
+import { FaUserCircle } from 'react-icons/fa';
 
 export default function Dashboard() {
     const { user, isLoading, isAuthenticated } = useAuth();
@@ -84,15 +85,17 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                         <div className="flex items-center space-x-4">
-                            {userData?.photoURL && (
-                                <Image 
-                                src={user?.photoURL || '/default-avatar.png'} 
-                                alt="User Avatar" 
-                                width={40} 
-                                height={40} 
-                                className="rounded-full"
-                            />
-                            )}
+                        {userData?.photoURL ? (
+                                    <Image 
+                                        src={userData.photoURL} 
+                                        alt="User Avatar" 
+                                        width={40} 
+                                        height={40} 
+                                        className="rounded-full"
+                                    />
+                                ) : (
+                                    <FaUserCircle className="w-10 h-10 text-gray-500" />
+                                )}
                             <span className="text-lg font-medium">{userData?.displayName || 'User'}</span>
                         </div>
                     </div>
