@@ -6,10 +6,10 @@ import {
     where, 
     getDocs,
     addDoc,
-    doc,
-    getDoc,
-    updateDoc,
-    deleteDoc,
+    // doc,
+    // getDoc,
+    // updateDoc,
+    // deleteDoc,
     QueryConstraint
 } from "firebase/firestore";
 import { 
