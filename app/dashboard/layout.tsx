@@ -17,8 +17,6 @@ export default function DashboardLayout({
 
     const navigation = [
         { name: 'Home', href: '/dashboard', icon: FiHome },
-        { name: 'Client Portal', href: '/dashboard/client', icon: FiUser },
-        { name: 'Driver Portal', href: '/dashboard/driver', icon: FiTruck },
     ];
 
     const handleLogout = async () => {

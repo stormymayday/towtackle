@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface User {
   id: string;
   email: string;
@@ -17,10 +19,10 @@ export interface Incident {
   };
   vehicleType: string;
   issueType: 'towing' | 'breakdown' | 'flat_tire' | 'other';
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   assignedProviderId?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | Timestamp;
+  updatedAt: Date | Timestamp;
 }
 
 export interface ServiceProvider {

@@ -7,11 +7,13 @@ import {
     where, 
     getDocs,
     addDoc,
-    // doc,
-    // getDoc,
-    // updateDoc,
-    // deleteDoc,
-    QueryConstraint
+    doc,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    QueryConstraint,
+    orderBy,
+    Timestamp
 } from "firebase/firestore";
 import { 
     getAuth, 
@@ -20,11 +22,10 @@ import {
     signOut 
 } from "firebase/auth";
 import { User, 
-    // Incident, 
-    // ServiceProvider 
+    Incident, 
+    ServiceProvider 
 } from "./types";
 
-// Firebase configuration
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -34,12 +35,10 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Utility function to get current user
 const getCurrentUser = () => {
     const user = auth.currentUser;
     if (!user) {
@@ -49,13 +48,12 @@ const getCurrentUser = () => {
     return user;
 };
 
-// Generic document retrieval function
+
 export const getDocuments = async <T>(
     collectionName: string, 
     ...queryConstraints: QueryConstraint[]
 ): Promise<(T & { id: string })[]> => {
     try {
-        // Ensure user is authenticated
         getCurrentUser();
 
         const collectionRef = collection(db, collectionName);
@@ -74,12 +72,11 @@ export const getDocuments = async <T>(
     }
 };
 
-// Specialized query functions
+
 export const findUserByEmail = async (email: string): Promise<(User & { id: string }) | null> => {
     try {
         console.log('Searching for user with email:', email);
         
-        // Ensure user is authenticated
         getCurrentUser();
 
         const users = await getDocuments<User>('users', where('email', '==', email));
@@ -97,13 +94,11 @@ export const findUserByEmail = async (email: string): Promise<(User & { id: stri
     }
 };
 
-// Generic document addition function
 export const addDocument = async <T>(
     collectionName: string, 
     data: Omit<T, 'id'>
 ): Promise<string> => {
     try {
-        // Ensure user is authenticated
         getCurrentUser();
 
         const docRef = await addDoc(collection(db, collectionName), data);
@@ -114,7 +109,6 @@ export const addDocument = async <T>(
     }
 };
 
-// User document creation function
 export const createUserDocument = async (user: {
     email: string;
     displayName?: string | null;
@@ -123,19 +117,16 @@ export const createUserDocument = async (user: {
     try {
         console.log('Creating user document for:', user.email);
 
-        // Ensure user is authenticated
         const currentUser = getCurrentUser();
 
-        // Create new user document
         const userData: Omit<User, 'id'> = {
             email: user.email,
             displayName: user.displayName || currentUser.displayName || 'User',
-            role: 'client', // Default role
-            phoneNumber: currentUser.phoneNumber || '', // Use phone from auth if available
+            role: 'client', 
+            phoneNumber: currentUser.phoneNumber || '',
             createdAt: new Date()
         };
 
-        // Always try to add the document, even if findUserByEmail fails
         const userId = await addDocument<User>('users', userData);
         console.log('New user created with ID:', userId);
 
@@ -146,8 +137,6 @@ export const createUserDocument = async (user: {
     } catch (error) {
         console.error('Error creating user document:', error);
         
-        // If the error is due to permissions or user not found, 
-        // we'll try to create the document without the initial check
         if (error instanceof Error && error.message.includes('Authentication required')) {
             try {
                 const userData: Omit<User, 'id'> = {
@@ -175,7 +164,78 @@ export const createUserDocument = async (user: {
     }
 };
 
-// Authentication functions
+
+export const findIncidentsByUser = async (userId: string): Promise<Incident[]> => {
+    try {
+        const currentUser = getCurrentUser();
+        
+        const q = query(
+            collection(db, 'incidents'), 
+            where('userId', '==', userId),
+            orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt instanceof Timestamp 
+                    ? data.createdAt.toDate() 
+                    : data.createdAt,
+                updatedAt: data.updatedAt instanceof Timestamp 
+                    ? data.updatedAt.toDate() 
+                    : data.updatedAt
+            } as Incident;
+        });
+    } catch (error) {
+        console.error('Error finding incidents by user:', error);
+        throw error;
+    }
+};
+
+export const createIncident = async (incidentData: {
+    location: {
+        latitude: number;
+        longitude: number;
+        address: string;
+    };
+    vehicleType: string;
+    issueType: 'towing' | 'breakdown' | 'flat_tire' | 'other';
+}): Promise<Incident> => {
+    try {
+        const currentUser = getCurrentUser();
+
+        const fullIncidentData: Omit<Incident, 'id'> = {
+            userId: currentUser.uid,
+            location: incidentData.location,
+            vehicleType: incidentData.vehicleType,
+            issueType: incidentData.issueType,
+            status: 'pending',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now()
+        };
+
+        const incidentId = await addDocument<Incident>('incidents', fullIncidentData);
+        console.log('New incident created with ID:', incidentId);
+
+        return {
+            ...fullIncidentData,
+            id: incidentId,
+            createdAt: fullIncidentData.createdAt instanceof Timestamp 
+                ? fullIncidentData.createdAt.toDate() 
+                : fullIncidentData.createdAt,
+            updatedAt: fullIncidentData.updatedAt instanceof Timestamp 
+                ? fullIncidentData.updatedAt.toDate() 
+                : fullIncidentData.updatedAt
+        };
+    } catch (error) {
+        console.error('Error creating incident:', error);
+        throw error;
+    }
+};
+
 export const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
