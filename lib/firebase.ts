@@ -18,7 +18,10 @@ import {
     signInWithPopup, 
     signOut 
 } from "firebase/auth";
-import { User, Incident, ServiceProvider } from "./types";
+import { User, 
+    // Incident, 
+    // ServiceProvider 
+} from "./types";
 
 // Firebase configuration
 const firebaseConfig = {
