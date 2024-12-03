@@ -10,8 +10,7 @@ import {
     deleteDoc,
     DocumentData,
     UpdateData,
-    // QueryDocumentSnapshot,
-    // DocumentSnapshot
+    getDoc
 } from "firebase/firestore";
 import { CollectionName, User, Incident, ServiceProvider } from "./types";
 
@@ -57,6 +56,27 @@ export const getDocuments = async <T extends DocumentData>(
     }
 };
 
+export const getDocument = async <T extends DocumentData>(
+    collectionName: CollectionName, 
+    docId: string
+): Promise<(T & { id: string }) | null> => {
+    try {
+        const docRef = doc(db, collectionName, docId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            return {
+                id: docSnap.id,
+                ...docSnap.data() as T
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error(`Error getting document from ${collectionName}: `, error);
+        throw error;
+    }
+};
+
 export const updateDocument = async <T extends DocumentData>(
     collectionName: CollectionName, 
     docId: string, 
@@ -82,6 +102,28 @@ export const deleteDocument = async (
         console.error(`Error deleting document from ${collectionName}: `, error);
         throw error;
     }
+};
+
+// Specialized query functions
+export const findUserByEmail = async (email: string): Promise<(User & { id: string }) | null> => {
+    const users = await getDocuments<User>('users');
+    return users.find(user => user.email === email) || null;
+};
+
+export const findIncidentsByUser = async (userId: string): Promise<(Incident & { id: string })[]> => {
+    const incidents = await getDocuments<Incident>('incidents');
+    return incidents.filter(incident => incident.userId === userId);
+};
+
+export const findAvailableServiceProviders = async (
+    serviceArea?: string, 
+    vehicleType?: string
+): Promise<(ServiceProvider & { id: string })[]> => {
+    const providers = await getDocuments<ServiceProvider>('service_providers');
+    return providers.filter(provider => 
+        (!serviceArea || provider.serviceArea.includes(serviceArea)) &&
+        (!vehicleType || provider.vehicleTypes.includes(vehicleType))
+    );
 };
 
 // Helper functions for specific collections
