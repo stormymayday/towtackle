@@ -171,7 +171,7 @@ export default function ClientIncidents() {
                     {incidents.length === 0 ? (
                         <div className="bg-white shadow-lg rounded-lg p-6 text-center">
                             <p className="text-gray-600">No incidents reported yet.</p>
-                            <p className="text-gray-500 mt-2">Click "Report New Incident" to get started.</p>
+                            <p className="text-gray-500 mt-2">Click &quot;Report New Incident&quot; to get started.</p>
                         </div>
                     ) : (
                         <div className="grid gap-6">

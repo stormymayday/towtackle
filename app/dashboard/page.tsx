@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { createUserDocument } from '@/lib/firebase';
 
@@ -84,11 +85,13 @@ export default function Dashboard() {
                         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                         <div className="flex items-center space-x-4">
                             {userData?.photoURL && (
-                                <img 
-                                    src={userData.photoURL} 
-                                    alt="Profile" 
-                                    className="w-10 h-10 rounded-full"
-                                />
+                                <Image 
+                                src={user?.photoURL || '/default-avatar.png'} 
+                                alt="User Avatar" 
+                                width={40} 
+                                height={40} 
+                                className="rounded-full"
+                            />
                             )}
                             <span className="text-lg font-medium">{userData?.displayName || 'User'}</span>
                         </div>
