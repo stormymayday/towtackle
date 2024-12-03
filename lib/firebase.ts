@@ -10,8 +10,8 @@ import {
     deleteDoc,
     DocumentData,
     UpdateData,
-    QueryDocumentSnapshot,
-    DocumentSnapshot
+    // QueryDocumentSnapshot,
+    // DocumentSnapshot
 } from "firebase/firestore";
 import { CollectionName, User, Incident, ServiceProvider } from "./types";
 
